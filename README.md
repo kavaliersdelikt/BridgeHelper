@@ -1,36 +1,27 @@
 # BridgeHelper
+**Live timing feedback to help you actually get consistent at speed-bridging.**
 
-**Get live feedback on your timing to help you master speed-bridging.**
+Speed-bridging is all about rhythm, and rhythm is really hard to self-diagnose. Most tools just tell you that you fell—not *why*. BridgeHelper shows you your timing while you're mid-bridge, so you can make corrections in the moment instead of guessing after the fact.
 
-Ever wondered why your speed-bridging feels inconsistent? Most mods tell you *after* you fall. **BridgeHelper** shows you exactly when to click *while* you're building. 
+It works by reading your raw keyboard input directly, which means the timing calculations are tied to your actual movement rather than the game's tick cycle. You can check the raw millisecond data if you're into that, or just use the plain-English feedback mode if you'd rather keep it simple. Either way, the goal is the same: help you find a consistent rhythm and actually keep it.
 
-By tracking your raw keyboard input, we calculate your timing window down to the millisecond—meaning our feedback is always synced to your actual movement, not just the game's ticks. Whether you use the technical millisecond view or the easy 'User Friendly' messages, BridgeHelper helps you find your rhythm and stick to it.
+## Why it works
+- **Real-time feedback** - placement windows are calculated from your actual velocity as you move, not from a fixed formula
+- **Sub-tick detection** - your unsneak gets caught the moment it happens, before the next game tick is even processed
+- **Fully customizable HUD** - reposition it, recolor it, add sound cues, whatever fits your setup
+- **Faster muscle memory** - instant audio/visual feedback beats silent trial-and-error every time
 
-## 🚀 Why professionals use BridgeHelper
+## Installation
+1. Make sure you have **Minecraft Forge 1.8.9** installed
+2. Grab the latest `BridgeHelper-x.x.x.jar` from the [Releases](https://github.com/kavaliersdelikt/bridgehelper/releases) page
+3. Drop the JAR into your `.minecraft/mods` folder
+4. Launch and you're good
 
-- **Zero Guesses**: Real-time physics models calculate your ideal placement window based on your actual velocity.
-- **Sub-Tick Accuracy**: We catch your 'unsneak' the moment it happens, providing feedback before the game even processes the next tick.
-- **Completely Customizable**: Move the HUD, change colors, or toggle sound cues to fit your setup perfectly.
-- **Learn Faster**: The instant visual and auditory feedback builds muscle memory significantly faster than solo practice.
+## How to use
+- Hit `M` (rebindable) to open the settings menu
+- You'll see a "DRAG ME" box when the menu is open — drag it to move your HUD wherever you want
+- Start bridging. The mod detects it automatically and shows your timing feedback near your crosshair
+- If your HUD goes missing or gets messed up, there's a "Reset Position" button in the UI tab
 
-## 🛠️ Installation
-
-1. Ensure you have **Minecraft Forge 1.8.9** installed.
-2. Download the latest `BridgeHelper-x.x.x.jar` from the [Releases](https://github.com/yourusername/bridgehelper/releases) page.
-3. Place the JAR file into your `.minecraft/mods` folder.
-4. Launch the game and enjoy!
-
-## 🎮 How to Use
-
-- **Open Settings**: Press `M` (configurable in controls) to open the BridgeHelper menu.
-- **Reposition HUD**: While the menu is open, you will see a "DRAG ME" box. Click and drag it to move the feedback text.
-- **Feedback**: Start speed-bridging! The mod will automatically detect when you are bridging and display your timing quality near your crosshair.
-- **Reset**: If you lose your HUD or want to revert changes, use the "Reset Position" button in the UI category.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request or open an issue for bug reports and feature requests.
+## License & Contributing
+Licensed under MIT. PRs and bug reports are always welcome - just open an issue or submit a pull request on GitHub.
