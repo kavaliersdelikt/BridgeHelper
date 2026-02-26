@@ -1,16 +1,15 @@
 package me.bridge.helper.core;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.Vec3;
-import org.lwjgl.input.Keyboard;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 public class MovementTracker {
-    private final Minecraft mc = Minecraft.getMinecraft();
-    private Vec3 lastPos = null;
+    private final MinecraftClient mc = MinecraftClient.getInstance();
+    private Vec3d lastPos = null;
     private final Deque<Double> speedHistory = new ArrayDeque<>();
     private double avgSpeed = 0.0;
 
@@ -20,10 +19,10 @@ public class MovementTracker {
     private boolean sprintAtUnsneak = false;
 
     public void update() {
-        EntityPlayerSP player = mc.thePlayer;
+        ClientPlayerEntity player = mc.player;
         if (player == null) return;
 
-        Vec3 currentPos = new Vec3(player.posX, player.posY, player.posZ);
+        Vec3d currentPos = player.getPos();
         if (lastPos != null) {
             double distance = currentPos.distanceTo(lastPos);
             if (distance > 0.001) {
@@ -40,18 +39,14 @@ public class MovementTracker {
             }
         }
         lastPos = currentPos;
-        isSneaking = player.isSneaking();
-        isSprinting = player.isSprinting();
-    }
 
-    public void onSneakKey(boolean pressed) {
-        if (isSneaking && !pressed) {
+        boolean nowSneaking = player.isSneaking();
+        if (isSneaking && !nowSneaking) {
             lastUnsneakTime = System.currentTimeMillis();
-            if (mc.thePlayer != null) {
-                sprintAtUnsneak = mc.thePlayer.isSprinting();
-            }
+            sprintAtUnsneak = player.isSprinting();
         }
-        isSneaking = pressed;
+        isSneaking = nowSneaking;
+        isSprinting = player.isSprinting();
     }
 
     public double getAvgSpeed() {
@@ -75,15 +70,12 @@ public class MovementTracker {
     }
 
     public MovementDirection getDirection() {
-        EntityPlayerSP player = mc.thePlayer;
-        if (player == null) return MovementDirection.STATIONARY;
+        ClientPlayerEntity player = mc.player;
+        if (player == null || player.input == null) return MovementDirection.STATIONARY;
 
-        float forward = player.movementInput.moveForward;
-        float strafe = player.movementInput.moveStrafe;
-
-        if (forward < 0) {
-            if (strafe > 0) return MovementDirection.BACKWARD_LEFT;
-            if (strafe < 0) return MovementDirection.BACKWARD_RIGHT;
+        if (player.input.pressingBack) {
+            if (player.input.pressingLeft) return MovementDirection.BACKWARD_LEFT;
+            if (player.input.pressingRight) return MovementDirection.BACKWARD_RIGHT;
             return MovementDirection.BACKWARD;
         }
         return MovementDirection.OTHER;
@@ -93,3 +85,4 @@ public class MovementTracker {
         BACKWARD, BACKWARD_LEFT, BACKWARD_RIGHT, STATIONARY, OTHER
     }
 }
+

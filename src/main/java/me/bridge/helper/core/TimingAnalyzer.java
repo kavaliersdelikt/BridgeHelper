@@ -1,8 +1,8 @@
 package me.bridge.helper.core;
 
 import me.bridge.helper.config.SettingsManager;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 
 public class TimingAnalyzer {
     private final SettingsManager settings = SettingsManager.getInstance();
@@ -11,13 +11,14 @@ public class TimingAnalyzer {
         if (avgSpeed <= 0) return null;
 
         long deltaTime = placeTime - unsneakTime;
-        
+
         double baseDistance = settings.idealEdgeDistance;
         double speed = settings.movementCompensation ? avgSpeed : (sprinting ? 0.2806 : 0.2158);
-        
+
         if (settings.diagonalAdjustment) {
-            EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-            if (player != null && player.movementInput.moveStrafe != 0) {
+            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+            if (player != null && player.input != null
+                    && (player.input.pressingLeft || player.input.pressingRight)) {
                 baseDistance *= 1.20;
             }
         }
@@ -64,3 +65,4 @@ public class TimingAnalyzer {
         PERFECT, TOO_EARLY, TOO_LATE
     }
 }
+

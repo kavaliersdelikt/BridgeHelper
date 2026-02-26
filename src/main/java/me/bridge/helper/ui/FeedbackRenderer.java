@@ -2,17 +2,17 @@ package me.bridge.helper.ui;
 
 import me.bridge.helper.config.SettingsManager;
 import me.bridge.helper.core.TimingAnalyzer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.sound.SoundEvents;
 
 import java.awt.*;
 
-public class FeedbackRenderer extends Gui {
-    private final Minecraft mc = Minecraft.getMinecraft();
+public class FeedbackRenderer {
+    private final MinecraftClient mc = MinecraftClient.getInstance();
     private final SettingsManager settings = SettingsManager.getInstance();
 
     private TimingAnalyzer.Classification currentClassification = null;
@@ -20,25 +20,30 @@ public class FeedbackRenderer extends Gui {
     private long lastFeedbackTime = 0;
     private boolean showSprintIcon = false;
 
+    public void register() {
+        HudRenderCallback.EVENT.register(this::onHudRender);
+    }
+
     public void postFeedback(TimingAnalyzer.TimingResult result, boolean sprinting) {
         this.lastResult = result;
         this.currentClassification = result.classification;
         this.lastFeedbackTime = System.currentTimeMillis();
         this.showSprintIcon = sprinting;
 
-        if (settings.soundEnabled && mc.thePlayer != null) {
-            float pitch = 1.0f;
+        if (settings.soundEnabled && mc.player != null) {
+            float pitch;
             if (result.classification == TimingAnalyzer.Classification.PERFECT) pitch = 1.5f;
             else if (result.classification == TimingAnalyzer.Classification.TOO_EARLY) pitch = 0.8f;
-            else if (result.classification == TimingAnalyzer.Classification.TOO_LATE) pitch = 0.5f;
-            
-            mc.thePlayer.playSound("gui.button.press", settings.soundVolume, pitch);
+            else pitch = 0.5f;
+
+            mc.getSoundManager().play(
+                    PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK.value(), pitch, settings.soundVolume)
+            );
         }
     }
 
-    @SubscribeEvent
-    public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
-        if (!settings.enabled || currentClassification == null || event.type != RenderGameOverlayEvent.ElementType.ALL) return;
+    private void onHudRender(DrawContext context, RenderTickCounter tickCounter) {
+        if (!settings.enabled || currentClassification == null) return;
 
         long elapsed = System.currentTimeMillis() - lastFeedbackTime;
         if (elapsed > settings.feedbackDuration) {
@@ -46,10 +51,10 @@ public class FeedbackRenderer extends Gui {
             return;
         }
 
-        render(event.resolution, elapsed);
+        render(context, elapsed);
     }
 
-    private void render(ScaledResolution res, long elapsed) {
+    private void render(DrawContext context, long elapsed) {
         String text;
         if (settings.userFriendlyMode) {
             if (currentClassification == TimingAnalyzer.Classification.PERFECT) {
@@ -76,62 +81,73 @@ public class FeedbackRenderer extends Gui {
         float scaleProgress = Math.min(1.0f, (float) elapsed / 200f);
         float scale = easeOutBack(scaleProgress) * settings.feedbackScale;
 
-        int x = (int) (res.getScaledWidth() * settings.posX);
-        int y = (int) (res.getScaledHeight() * settings.posY);
+        int screenW = mc.getWindow().getScaledWidth();
+        int screenH = mc.getWindow().getScaledHeight();
+        int x = (int) (screenW * settings.posX);
+        int y = (int) (screenH * settings.posY);
 
-        GlStateManager.pushMatrix();
-        GlStateManager.translate(x, y, 0);
-        GlStateManager.scale(scale, scale, 1);
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        int textWidth = mc.textRenderer.getWidth(text);
+        int textHeight = mc.textRenderer.fontHeight;
 
-        int textWidth = mc.fontRendererObj.getStringWidth(text);
-        int textHeight = mc.fontRendererObj.FONT_HEIGHT;
+        int finalColor = (color & 0x00FFFFFF) | ((int) (alpha * 255) << 24);
+
+        context.getMatrices().push();
+        context.getMatrices().translate(x, y, 0);
+        context.getMatrices().scale(scale, scale, 1);
 
         if (settings.roundedCorners) {
             int padding = 4;
-            int bgH = textHeight + (settings.showRawDeltaTime || settings.showIdealMs || settings.showAvgSpeed ? 20 : 0);
-            drawRect(-textWidth / 2 - padding, -textHeight / 2 - padding, textWidth / 2 + padding, textHeight / 2 + bgH + padding, (int) (alpha * 0xAA) << 24);
+            int extraLines = (settings.showRawDeltaTime ? 1 : 0)
+                    + (settings.showIdealMs ? 1 : 0)
+                    + (settings.showAvgSpeed ? 1 : 0);
+            int bgH = textHeight + (extraLines > 0 ? extraLines * 10 + 2 : 0);
+            int bgAlpha = (int) (alpha * 0xAA);
+            context.fill(
+                    -textWidth / 2 - padding, -textHeight / 2 - padding,
+                    textWidth / 2 + padding, textHeight / 2 + bgH + padding,
+                    bgAlpha << 24
+            );
         }
 
-        int finalColor = (color & 0x00FFFFFF) | ((int) (alpha * 255) << 24);
-        
-        if (settings.shadowEnabled) {
-            mc.fontRendererObj.drawStringWithShadow(text, -textWidth / 2f, -textHeight / 2f, finalColor);
-        } else {
-            mc.fontRendererObj.drawString(text, -textWidth / 2, -textHeight / 2, finalColor);
-        }
+        context.drawText(mc.textRenderer, text,
+                -textWidth / 2, -textHeight / 2, finalColor, settings.shadowEnabled);
 
-        float extraY = textHeight / 2f + 2;
+        int extraY = textHeight / 2 + 2;
         if (settings.showRawDeltaTime) {
-            mc.fontRendererObj.drawStringWithShadow("Delta: " + lastResult.deltaTime + "ms", -textWidth / 2f, extraY, 0xAAFFFFFF);
+            context.drawText(mc.textRenderer,
+                    "Delta: " + lastResult.deltaTime + "ms",
+                    -textWidth / 2, extraY, 0xAAFFFFFF, true);
             extraY += 10;
         }
         if (settings.showIdealMs) {
-            mc.fontRendererObj.drawStringWithShadow("Ideal: " + String.format("%.1f", lastResult.idealMs) + "ms", -textWidth / 2f, extraY, 0xAAFFFFFF);
+            context.drawText(mc.textRenderer,
+                    "Ideal: " + String.format("%.1f", lastResult.idealMs) + "ms",
+                    -textWidth / 2, extraY, 0xAAFFFFFF, true);
             extraY += 10;
         }
         if (settings.showAvgSpeed) {
-            mc.fontRendererObj.drawStringWithShadow("Speed: " + String.format("%.2f", lastResult.error), -textWidth / 2f, extraY, 0xAAFFFFFF);
+            context.drawText(mc.textRenderer,
+                    "Speed: " + String.format("%.2f", lastResult.error),
+                    -textWidth / 2, extraY, 0xAAFFFFFF, true);
             extraY += 10;
         }
 
         if (settings.tickVisualization) {
             int barW = 40;
             int barH = 2;
-            drawRect(-barW / 2, (int) extraY, barW / 2, (int) extraY + barH, 0x55FFFFFF);
+            context.fill(-barW / 2, extraY, barW / 2, extraY + barH, 0x55FFFFFF);
             int markerPos = (int) ((lastResult.error / 50.0) * (barW / 2f));
             markerPos = Math.max(-barW / 2, Math.min(barW / 2, markerPos));
-            drawRect(markerPos - 1, (int) extraY - 1, markerPos + 1, (int) extraY + barH + 1, finalColor);
+            context.fill(markerPos - 1, extraY - 1, markerPos + 1, extraY + barH + 1, finalColor);
         }
 
         if (settings.sprintIndicator && showSprintIcon) {
             String sprintChar = "[S]";
-            int sprintW = mc.fontRendererObj.getStringWidth(sprintChar);
-            mc.fontRendererObj.drawString(sprintChar, -sprintW / 2, (int)extraY + 5, finalColor);
+            int sprintW = mc.textRenderer.getWidth(sprintChar);
+            context.drawText(mc.textRenderer, sprintChar, -sprintW / 2, extraY + 5, finalColor, false);
         }
 
-        GlStateManager.popMatrix();
+        context.getMatrices().pop();
     }
 
     private int getClassificationColor(TimingAnalyzer.Classification classification) {
@@ -149,3 +165,4 @@ public class FeedbackRenderer extends Gui {
         return (float) (1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2));
     }
 }
+

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "bridgehelper",
+  "version": "${version}",
+  "name": "BridgeHelper",
+  "description": "Simple and minimalistic bridging timing feedback mod with high precision.",
+  "authors": ["Antigravity"],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "me.bridge.helper.BridgeHelper"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric-api": "*",
+    "minecraft": "~1.21.1",
+    "java": ">=21"
+  }
+}
