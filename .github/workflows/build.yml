@@ -15,11 +15,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up JDK 8
+
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
-        java-version: '8'
+        java-version: '21'
         distribution: 'temurin'
         cache: gradle
 
@@ -28,11 +28,29 @@ jobs:
         sed -i 's/\r$//' gradlew
         chmod +x gradlew
 
-    - name: Build with Gradle
+    - name: Build Forge 1.8.9
+      run: sh gradlew :forge-1.8.9:build
+
+    - name: Build Fabric 1.19.4
+      run: sh gradlew :fabric-legacy:build
+
+    - name: Build Fabric 1.21.1
       run: sh gradlew build
 
-    - name: Upload Build Artifact
+    - name: Upload Forge Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: BridgeHelper-JAR
-        path: build/libs/BridgeHelper-1.0.0.jar
+        name: BridgeHelper-Forge-1.8.9
+        path: forge-1.8.9/build/libs/BridgeHelper-1.0.0.jar
+
+    - name: Upload Fabric 1.19.4 Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: BridgeHelper-Fabric-1.19.4
+        path: fabric-legacy/build/libs/BridgeHelper-1.0.0+1.19.4.jar
+
+    - name: Upload Fabric 1.21.1 Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: BridgeHelper-Fabric-1.21.1
+        path: build/libs/BridgeHelper-1.0.0+1.21.1.jar

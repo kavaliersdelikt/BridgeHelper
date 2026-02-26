@@ -32,19 +32,22 @@ public class FeedbackRenderer {
 
         if (settings.soundEnabled && mc.player != null) {
             float pitch;
-            if (result.classification == TimingAnalyzer.Classification.PERFECT) pitch = 1.5f;
-            else if (result.classification == TimingAnalyzer.Classification.TOO_EARLY) pitch = 0.8f;
-            else pitch = 0.5f;
+            if (result.classification == TimingAnalyzer.Classification.PERFECT)
+                pitch = 1.5f;
+            else if (result.classification == TimingAnalyzer.Classification.TOO_EARLY)
+                pitch = 0.8f;
+            else
+                pitch = 0.5f;
 
             mc.getSoundManager().play(
-                    PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, pitch, settings.soundVolume)
-            );
+                    PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, pitch, settings.soundVolume));
         }
     }
 
     // 1.14-1.19.4: HudRenderCallback signature is (MatrixStack, float)
     private void onHudRender(MatrixStack matrices, float tickDelta) {
-        if (!settings.enabled || currentClassification == null) return;
+        if (!settings.enabled || currentClassification == null)
+            return;
 
         long elapsed = System.currentTimeMillis() - lastFeedbackTime;
         if (elapsed > settings.feedbackDuration) {
@@ -62,10 +65,14 @@ public class FeedbackRenderer {
                 text = "PERFECT!";
             } else {
                 double error = lastResult.error;
-                if (error < -15) text = "WAY TOO EARLY";
-                else if (error < 0) text = "SLIGHTLY EARLY";
-                else if (error > 15) text = "WAY TOO LATE";
-                else text = "SLIGHTLY LATE";
+                if (error < -15)
+                    text = "WAY TOO EARLY";
+                else if (error < 0)
+                    text = "SLIGHTLY EARLY";
+                else if (error > 15)
+                    text = "WAY TOO LATE";
+                else
+                    text = "SLIGHTLY LATE";
             }
         } else {
             text = currentClassification.name().replace("_", " ");
@@ -106,7 +113,7 @@ public class FeedbackRenderer {
             DrawableHelper.fill(matrices,
                     -textWidth / 2 - 4, -textHeight / 2 - 4,
                     textWidth / 2 + 4, textHeight / 2 + bgH + 4,
-                    bgAlpha << 24);
+                    (bgAlpha << 24) | (settings.accentColor & 0x00FFFFFF));
         }
 
         if (settings.shadowEnabled) {
@@ -128,7 +135,7 @@ public class FeedbackRenderer {
         }
         if (settings.showAvgSpeed) {
             mc.textRenderer.drawWithShadow(matrices,
-                    "Speed: " + String.format("%.2f", lastResult.error), -textWidth / 2f, extraY, 0xAAFFFFFF);
+                    "Error: " + String.format("%.1f", lastResult.error) + "ms", -textWidth / 2f, extraY, 0xAAFFFFFF);
             extraY += 10;
         }
 
@@ -152,10 +159,14 @@ public class FeedbackRenderer {
 
     private int getClassificationColor(TimingAnalyzer.Classification classification) {
         switch (classification) {
-            case PERFECT: return Color.GREEN.getRGB();
-            case TOO_EARLY: return Color.YELLOW.getRGB();
-            case TOO_LATE: return Color.RED.getRGB();
-            default: return -1;
+            case PERFECT:
+                return Color.GREEN.getRGB();
+            case TOO_EARLY:
+                return Color.YELLOW.getRGB();
+            case TOO_LATE:
+                return Color.RED.getRGB();
+            default:
+                return -1;
         }
     }
 

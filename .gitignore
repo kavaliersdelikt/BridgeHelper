@@ -1,6 +1,7 @@
 # Gradle build outputs
 .gradle/
 build/
+bin/
 forge-1.8.9/build/
 fabric-legacy/build/
 
