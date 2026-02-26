@@ -23,8 +23,9 @@ jobs:
           cache: gradle
       - name: Build Forge
         run: |
+          cd forge-1.8.9
           chmod +x gradlew
-          ./gradlew :forge-1.8.9:build --no-daemon
+          ./gradlew build --no-daemon
       - name: Upload Forge Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -44,8 +45,9 @@ jobs:
           cache: gradle
       - name: Build Legacy
         run: |
+          cd fabric-legacy
           chmod +x gradlew
-          ./gradlew :fabric-legacy:build --no-daemon
+          ./gradlew build --no-daemon
       - name: Upload Legacy Artifact
         uses: actions/upload-artifact@v4
         with:

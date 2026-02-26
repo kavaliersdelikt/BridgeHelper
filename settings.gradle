@@ -7,5 +7,4 @@ pluginManagement {
 }
 
 rootProject.name = 'BridgeHelper'
-include 'forge-1.8.9'
-include 'fabric-legacy'
+// Modules are isolated to allow different Gradle and Java versions
