@@ -1,9 +1,7 @@
 plugins {
-    id 'fabric-loom' version '1.7.4' apply false
+    id 'fabric-loom' version '1.8-SNAPSHOT'
     id 'maven-publish'
 }
-
-apply plugin: 'fabric-loom'
 
 version = "1.0.0+1.21.11"
 group = "me.bridge.helper"
