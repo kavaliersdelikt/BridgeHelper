@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.2.4'
+    id 'fabric-loom' version '1.7.4'
     id 'maven-publish'
 }
 
@@ -8,7 +8,6 @@ group = "me.bridge.helper"
 archivesBaseName = "BridgeHelper"
 
 repositories {
-    // Fabric maven is added automatically by Loom
 }
 
 dependencies {
