@@ -1,0 +1,16 @@
+[
+{
+  "modid": "bridgehelper",
+  "name": "BridgeHelper",
+  "description": "Simple and minimalistic bridging timing feedback mod with high precision.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Antigravity"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

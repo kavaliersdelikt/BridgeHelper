@@ -6,20 +6,19 @@ import me.bridge.helper.core.MovementTracker;
 import me.bridge.helper.core.TimingAnalyzer;
 import me.bridge.helper.ui.ClickGUI;
 import me.bridge.helper.ui.FeedbackRenderer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.lwjgl.input.Keyboard;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import org.lwjgl.glfw.GLFW;
 
-@Mod(modid = "bridgehelper", name = "BridgeHelper", version = "1.0.0", clientSideOnly = true)
-public class BridgeHelper {
+public class BridgeHelper implements ClientModInitializer {
     private final SettingsManager settings = SettingsManager.getInstance();
     private final MovementTracker movementTracker = new MovementTracker();
     private final BridgeDetector bridgeDetector = new BridgeDetector();
@@ -28,31 +27,36 @@ public class BridgeHelper {
 
     private static KeyBinding guiKey;
 
-    @Mod.EventHandler
-    public void init(FMLInitializationEvent event) {
-        MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(feedbackRenderer);
+    @Override
+    public void onInitializeClient() {
+        guiKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.bridgehelper.open_settings",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_M,
+                "category.bridgehelper"
+        ));
 
-        guiKey = new KeyBinding("Open Settings", Keyboard.KEY_M, "BridgeHelper");
-        ClientRegistry.registerKeyBinding(guiKey);
-    }
+        feedbackRenderer.register();
 
-    @SubscribeEvent
-    public void onTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && Minecraft.getMinecraft().thePlayer != null) {
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.player == null) return;
             movementTracker.update();
-        }
-    }
+            if (guiKey.wasPressed()) {
+                client.setScreen(new ClickGUI());
+            }
+        });
 
-    @SubscribeEvent
-    public void onInteract(PlayerInteractEvent event) {
-        if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK && event.entityPlayer == Minecraft.getMinecraft().thePlayer) {
-            if (!settings.enabled) return;
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (!world.isClient()) return ActionResult.PASS;
+            if (hand != Hand.MAIN_HAND) return ActionResult.PASS;
+            if (!(hitResult instanceof BlockHitResult blockHit)) return ActionResult.PASS;
+            if (player != MinecraftClient.getInstance().player) return ActionResult.PASS;
+            if (!settings.enabled) return ActionResult.PASS;
 
-            if (bridgeDetector.isBridging(event.pos)) {
+            if (bridgeDetector.isBridging(blockHit.getBlockPos())) {
                 long unsneakTime = movementTracker.getLastUnsneakTime();
                 long placeTime = System.currentTimeMillis();
-                
+
                 if (placeTime - unsneakTime < 1000) {
                     TimingAnalyzer.TimingResult result = timingAnalyzer.analyze(
                             unsneakTime,
@@ -66,18 +70,8 @@ public class BridgeHelper {
                     }
                 }
             }
-        }
-    }
-
-    @SubscribeEvent
-    public void onKeyInput(InputEvent.KeyInputEvent event) {
-        if (guiKey.isPressed()) {
-            Minecraft.getMinecraft().displayGuiScreen(new ClickGUI());
-        }
-
-        int sneakKeyCode = Minecraft.getMinecraft().gameSettings.keyBindSneak.getKeyCode();
-        if (Keyboard.getEventKey() == sneakKeyCode) {
-            movementTracker.onSneakKey(Keyboard.getEventKeyState());
-        }
+            return ActionResult.PASS;
+        });
     }
 }
+

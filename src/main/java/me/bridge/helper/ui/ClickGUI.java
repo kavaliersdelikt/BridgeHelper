@@ -1,32 +1,34 @@
 package me.bridge.helper.ui;
 
 import me.bridge.helper.config.SettingsManager;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
-import org.lwjgl.input.Mouse;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.Text;
 
 import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClickGUI extends GuiScreen {
+public class ClickGUI extends Screen {
     private final SettingsManager settings = SettingsManager.getInstance();
     private final List<Component> components = new ArrayList<>();
-    private int startX = 50;
-    private int startY = 50;
-    private int width = 350;
-    private int height = 250;
+    private final int guiX = 50;
+    private final int guiY = 50;
+    private final int guiWidth = 350;
+    private final int guiHeight = 250;
     private Category currentCategory = Category.FEEDBACK;
+    private boolean draggingPreview = false;
+
+    public ClickGUI() {
+        super(Text.literal("BridgeHelper"));
+    }
 
     @Override
-    public void initGui() {
+    public void init() {
         components.clear();
-        int compX = startX + 110;
-        int compY = startY + 40;
+        int compX = guiX + 110;
+        int compY = guiY + 40;
 
         switch (currentCategory) {
             case FEEDBACK:
@@ -73,70 +75,80 @@ public class ClickGUI extends GuiScreen {
     }
 
     @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawDefaultBackground();
-        net.minecraft.client.gui.Gui.drawRect(startX, startY, startX + width, startY + height, 0xDD111111);
-        net.minecraft.client.gui.Gui.drawRect(startX, startY, startX + 100, startY + height, 0xDD222222);
-        mc.fontRendererObj.drawStringWithShadow("BridgeHelper", startX + 10, startY + 10, settings.accentColor);
-        int catY = startY + 40;
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        context.fill(0, 0, this.width, this.height, 0x80000000);
+        context.fill(guiX, guiY, guiX + guiWidth, guiY + guiHeight, 0xDD111111);
+        context.fill(guiX, guiY, guiX + 100, guiY + guiHeight, 0xDD222222);
+        context.drawText(this.textRenderer, "BridgeHelper", guiX + 10, guiY + 10, settings.accentColor, true);
+
+        int catY = guiY + 40;
         for (Category cat : Category.values()) {
             int color = (cat == currentCategory) ? settings.accentColor : 0xFFFFFFFF;
-            mc.fontRendererObj.drawStringWithShadow(cat.name(), startX + 10, catY, color);
+            context.drawText(this.textRenderer, cat.name(), guiX + 10, catY, color, true);
             catY += 20;
         }
+
         for (Component comp : components) {
-            comp.draw(mouseX, mouseY);
+            comp.draw(context, mouseX, mouseY);
         }
-        ScaledResolution sr = new ScaledResolution(mc);
-        int previewX = (int) (sr.getScaledWidth() * settings.posX);
-        int previewY = (int) (sr.getScaledHeight() * settings.posY);
-        net.minecraft.client.gui.Gui.drawRect(previewX - 20, previewY - 10, previewX + 20, previewY + 10, 0xAAFF5555);
-        mc.fontRendererObj.drawStringWithShadow("DRAG ME", previewX - 18, previewY - 4, 0xFFFFFFFF);
+
+        int previewX = (int) (this.width * settings.posX);
+        int previewY = (int) (this.height * settings.posY);
+        context.fill(previewX - 20, previewY - 10, previewX + 20, previewY + 10, 0xAAFF5555);
+        context.drawText(this.textRenderer, "DRAG ME", previewX - 18, previewY - 4, 0xFFFFFFFF, true);
         if (draggingPreview) {
-            settings.posX = (float) mouseX / sr.getScaledWidth();
-            settings.posY = (float) mouseY / sr.getScaledHeight();
+            settings.posX = (float) mouseX / this.width;
+            settings.posY = (float) mouseY / this.height;
         }
-        super.drawScreen(mouseX, mouseY, partialTicks);
+
+        super.render(context, mouseX, mouseY, delta);
     }
 
-    private boolean draggingPreview = false;
-
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        int catY = startY + 40;
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        int mx = (int) mouseX;
+        int my = (int) mouseY;
+
+        int catY = guiY + 40;
         for (Category cat : Category.values()) {
-            if (mouseX >= startX + 10 && mouseX <= startX + 90 && mouseY >= catY && mouseY <= catY + 15) {
+            if (mx >= guiX + 10 && mx <= guiX + 90 && my >= catY && my <= catY + 15) {
                 currentCategory = cat;
-                initGui();
-                return;
+                this.init();
+                return true;
             }
             catY += 20;
         }
-        ScaledResolution sr = new ScaledResolution(mc);
-        int previewX = (int) (sr.getScaledWidth() * settings.posX);
-        int previewY = (int) (sr.getScaledHeight() * settings.posY);
-        if (mouseX >= previewX - 20 && mouseX <= previewX + 20 && mouseY >= previewY - 10 && mouseY <= previewY + 10) {
+
+        int previewX = (int) (this.width * settings.posX);
+        int previewY = (int) (this.height * settings.posY);
+        if (mx >= previewX - 20 && mx <= previewX + 20 && my >= previewY - 10 && my <= previewY + 10) {
             draggingPreview = true;
-            return;
+            return true;
         }
+
         for (Component comp : components) {
-            comp.mouseClicked(mouseX, mouseY, mouseButton);
+            comp.mouseClicked(mx, my, button);
         }
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    protected void mouseReleased(int mouseX, int mouseY, int state) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         draggingPreview = false;
         for (Component comp : components) {
-            comp.mouseReleased(mouseX, mouseY, state);
+            comp.mouseReleased((int) mouseX, (int) mouseY, button);
         }
-        super.mouseReleased(mouseX, mouseY, state);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
-    public void onGuiClosed() {
+    public void removed() {
         settings.save();
+    }
+
+    @Override
+    public boolean shouldPause() {
+        return false;
     }
 
     private enum Category {
@@ -151,7 +163,7 @@ public class ClickGUI extends GuiScreen {
             this.x = x;
             this.y = y;
         }
-        public abstract void draw(int mouseX, int mouseY);
+        public abstract void draw(DrawContext context, int mouseX, int mouseY);
         public abstract void mouseClicked(int mouseX, int mouseY, int button);
         public void mouseReleased(int mouseX, int mouseY, int button) {}
     }
@@ -165,10 +177,11 @@ public class ClickGUI extends GuiScreen {
             this.setter = setter;
         }
         @Override
-        public void draw(int mouseX, int mouseY) {
-            Minecraft.getMinecraft().fontRendererObj.drawStringWithShadow(name, x, y, 0xFFFFFFFF);
+        public void draw(DrawContext context, int mouseX, int mouseY) {
+            context.drawText(MinecraftClient.getInstance().textRenderer, name, x, y, 0xFFFFFFFF, false);
             int toggleX = x + 150;
-            net.minecraft.client.gui.Gui.drawRect(toggleX, y, toggleX + 10, y + 10, getter.get() ? SettingsManager.getInstance().accentColor : 0xFF555555);
+            context.fill(toggleX, y, toggleX + 10, y + 10,
+                    getter.get() ? SettingsManager.getInstance().accentColor : 0xFF555555);
         }
         @Override
         public void mouseClicked(int mouseX, int mouseY, int button) {
@@ -191,14 +204,15 @@ public class ClickGUI extends GuiScreen {
             this.setter = setter;
         }
         @Override
-        public void draw(int mouseX, int mouseY) {
-            Minecraft.getMinecraft().fontRendererObj.drawStringWithShadow(name + ": " + String.format("%.2f", value), x, y, 0xFFFFFFFF);
+        public void draw(DrawContext context, int mouseX, int mouseY) {
+            context.drawText(MinecraftClient.getInstance().textRenderer,
+                    name + ": " + String.format("%.2f", value), x, y, 0xFFFFFFFF, false);
             int sliderX = x + 150;
             int sliderWidth = 80;
-            net.minecraft.client.gui.Gui.drawRect(sliderX, y + 4, sliderX + sliderWidth, y + 6, 0xFF555555);
+            context.fill(sliderX, y + 4, sliderX + sliderWidth, y + 6, 0xFF555555);
             float pos = (value - min) / (max - min);
             int knobX = sliderX + (int) (pos * sliderWidth);
-            net.minecraft.client.gui.Gui.drawRect(knobX - 2, y, knobX + 2, y + 10, SettingsManager.getInstance().accentColor);
+            context.fill(knobX - 2, y, knobX + 2, y + 10, SettingsManager.getInstance().accentColor);
             if (dragging) {
                 float newPos = (float) (mouseX - sliderX) / (float) sliderWidth;
                 newPos = Math.max(0, Math.min(1, newPos));
@@ -227,18 +241,18 @@ public class ClickGUI extends GuiScreen {
             this.action = action;
         }
         @Override
-        public void draw(int mouseX, int mouseY) {
-            int width = 100;
-            int height = 15;
-            boolean hovered = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
-            net.minecraft.client.gui.Gui.drawRect(x, y, x + width, y + height, hovered ? 0xFF666666 : 0xFF444444);
-            Minecraft.getMinecraft().fontRendererObj.drawStringWithShadow(name, x + 5, y + 4, 0xFFFFFFFF);
+        public void draw(DrawContext context, int mouseX, int mouseY) {
+            int w = 100;
+            int h = 15;
+            boolean hovered = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
+            context.fill(x, y, x + w, y + h, hovered ? 0xFF666666 : 0xFF444444);
+            context.drawText(MinecraftClient.getInstance().textRenderer, name, x + 5, y + 4, 0xFFFFFFFF, false);
         }
         @Override
         public void mouseClicked(int mouseX, int mouseY, int button) {
-            int width = 100;
-            int height = 15;
-            if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+            int w = 100;
+            int h = 15;
+            if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h) {
                 action.run();
             }
         }
