@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-if (JavaVersion.current().isJava17Compatible()) {
+if (JavaVersion.current() >= JavaVersion.VERSION_17) {
     apply plugin: 'fabric-loom'
 
     version = "1.0.0+1.21.11"
