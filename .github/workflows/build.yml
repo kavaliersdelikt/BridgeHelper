@@ -34,7 +34,7 @@ jobs:
     - name: Build Fabric 1.19.4
       run: sh gradlew :fabric-legacy:build
 
-    - name: Build Fabric 1.21.1
+    - name: Build Fabric 1.21.11
       run: sh gradlew build
 
     - name: Upload Forge Artifact
@@ -49,8 +49,8 @@ jobs:
         name: BridgeHelper-Fabric-1.19.4
         path: fabric-legacy/build/libs/BridgeHelper-1.0.0+1.19.4.jar
 
-    - name: Upload Fabric 1.21.1 Artifact
+    - name: Upload Fabric 1.21.11 Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: BridgeHelper-Fabric-1.21.1
-        path: build/libs/BridgeHelper-1.0.0+1.21.1.jar
+        name: BridgeHelper-Fabric-1.21.11
+        path: build/libs/BridgeHelper-1.0.0+1.21.11.jar
