@@ -5,7 +5,9 @@ plugins {
 
 version = "1.0.0+1.19.4"
 group = "me.bridge.helper"
-archivesBaseName = "BridgeHelper"
+base {
+    archivesName = "BridgeHelper"
+}
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -33,6 +35,6 @@ java {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
+        rename { "${it}_${base.archivesName.get()}" }
     }
 }
