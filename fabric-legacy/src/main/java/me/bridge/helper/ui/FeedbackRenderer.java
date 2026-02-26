@@ -40,7 +40,7 @@ public class FeedbackRenderer {
                 pitch = 0.5f;
 
             mc.getSoundManager().play(
-                    PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, pitch, settings.soundVolume));
+                    PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK.value(), pitch, settings.soundVolume));
         }
     }
 

@@ -33,13 +33,13 @@ public class BridgeHelper implements ClientModInitializer {
                 "key.bridgehelper.open_settings",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_M,
-                "category.bridgehelper"
-        ));
+                "category.bridgehelper"));
 
         feedbackRenderer.register();
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.player == null) return;
+            if (client.player == null)
+                return;
             movementTracker.update();
             if (guiKey.wasPressed()) {
                 client.setScreen(new ClickGUI());
@@ -47,11 +47,15 @@ public class BridgeHelper implements ClientModInitializer {
         });
 
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (!world.isClient()) return ActionResult.PASS;
-            if (hand != Hand.MAIN_HAND) return ActionResult.PASS;
-            if (!(hitResult instanceof BlockHitResult blockHit)) return ActionResult.PASS;
-            if (player != MinecraftClient.getInstance().player) return ActionResult.PASS;
-            if (!settings.enabled) return ActionResult.PASS;
+            if (!world.isClient())
+                return ActionResult.PASS;
+            if (hand != Hand.MAIN_HAND)
+                return ActionResult.PASS;
+            BlockHitResult blockHit = hitResult;
+            if (player != MinecraftClient.getInstance().player)
+                return ActionResult.PASS;
+            if (!settings.enabled)
+                return ActionResult.PASS;
 
             if (bridgeDetector.isBridging(blockHit.getBlockPos())) {
                 long unsneakTime = movementTracker.getLastUnsneakTime();
@@ -62,8 +66,7 @@ public class BridgeHelper implements ClientModInitializer {
                             unsneakTime,
                             placeTime,
                             movementTracker.getAvgSpeed(),
-                            movementTracker.wasSprintingAtUnsneak()
-                    );
+                            movementTracker.wasSprintingAtUnsneak());
 
                     if (result != null) {
                         feedbackRenderer.postFeedback(result, movementTracker.wasSprintingAtUnsneak());

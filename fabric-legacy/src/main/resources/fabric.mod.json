@@ -4,7 +4,9 @@
   "version": "${version}",
   "name": "BridgeHelper",
   "description": "Simple and minimalistic bridging timing feedback mod with high precision.",
-  "authors": ["Antigravity"],
+  "authors": [
+    "kavaliersdelikt"
+  ],
   "contact": {},
   "license": "MIT",
   "environment": "client",
