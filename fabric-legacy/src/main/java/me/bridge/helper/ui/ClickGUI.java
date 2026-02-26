@@ -91,7 +91,7 @@ public class ClickGUI extends Screen {
                         (v) -> settings.showRawDeltaTime = v));
                 components.add(new Toggle("Ideal MS", compX, compY + 25, () -> settings.showIdealMs,
                         (v) -> settings.showIdealMs = v));
-                components.add(new Toggle("Avg Speed", compX, compY + 50, () -> settings.showAvgSpeed,
+                components.add(new Toggle("Error", compX, compY + 50, () -> settings.showAvgSpeed,
                         (v) -> settings.showAvgSpeed = v));
                 components.add(new Toggle("Debug", compX, compY + 75, () -> settings.debugMode,
                         (v) -> settings.debugMode = v));

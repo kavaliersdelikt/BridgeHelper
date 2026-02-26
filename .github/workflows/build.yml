@@ -10,47 +10,65 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-forge:
+    name: Build Forge 1.8.9 (JDK 8)
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Build Forge
+        run: |
+          chmod +x gradlew
+          ./gradlew :forge-1.8.9:build --no-daemon
+      - name: Upload Forge Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BridgeHelper-Forge-1.8.9
+          path: forge-1.8.9/build/libs/BridgeHelper-1.0.0.jar
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: gradle
+  build-fabric-legacy:
+    name: Build Fabric Legacy (JDK 17)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Build Legacy
+        run: |
+          chmod +x gradlew
+          ./gradlew :fabric-legacy:build --no-daemon
+      - name: Upload Legacy Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BridgeHelper-Fabric-1.19.4
+          path: fabric-legacy/build/libs/BridgeHelper-1.0.0+1.19.4.jar
 
-    - name: Fix line endings and permissions for gradlew
-      run: |
-        sed -i 's/\r$//' gradlew
-        chmod +x gradlew
-
-    - name: Build Forge 1.8.9
-      run: sh gradlew :forge-1.8.9:build
-
-    - name: Build Fabric 1.19.4
-      run: sh gradlew :fabric-legacy:build
-
-    - name: Build Fabric 1.21.11
-      run: sh gradlew build
-
-    - name: Upload Forge Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: BridgeHelper-Forge-1.8.9
-        path: forge-1.8.9/build/libs/BridgeHelper-1.0.0.jar
-
-    - name: Upload Fabric 1.19.4 Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: BridgeHelper-Fabric-1.19.4
-        path: fabric-legacy/build/libs/BridgeHelper-1.0.0+1.19.4.jar
-
-    - name: Upload Fabric 1.21.11 Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: BridgeHelper-Fabric-1.21.11
-        path: build/libs/BridgeHelper-1.0.0+1.21.11.jar
+  build-fabric-modern:
+    name: Build Fabric 1.21.11 (JDK 21)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Build Modern
+        run: |
+          chmod +x gradlew
+          ./gradlew build --no-daemon
+      - name: Upload Modern Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BridgeHelper-Fabric-1.21.11
+          path: build/libs/BridgeHelper-1.0.0+1.21.11.jar

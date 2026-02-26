@@ -9,4 +9,3 @@ pluginManagement {
 rootProject.name = 'BridgeHelper'
 include 'forge-1.8.9'
 include 'fabric-legacy'
-// The root project itself acts as the 1.21.1 Fabric project

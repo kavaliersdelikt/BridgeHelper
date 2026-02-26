@@ -112,7 +112,7 @@ public class FeedbackRenderer {
             int bgAlpha = (int) (alpha * 0xAA);
             DrawableHelper.fill(matrices,
                     -textWidth / 2 - 4, -textHeight / 2 - 4,
-                    textWidth / 2 + 4, textHeight / 2 + bgH + 4,
+                    textWidth / 2 + padding, textHeight / 2 + bgH + padding,
                     (bgAlpha << 24) | (settings.accentColor & 0x00FFFFFF));
         }
 
@@ -134,8 +134,11 @@ public class FeedbackRenderer {
             extraY += 10;
         }
         if (settings.showAvgSpeed) {
+            // Assuming 'context' refers to the MatrixStack for legacy versions,
+            // and 'true' for shadow.
             mc.textRenderer.drawWithShadow(matrices,
-                    "Error: " + String.format("%.1f", lastResult.error) + "ms", -textWidth / 2f, extraY, 0xAAFFFFFF);
+                    "Error: " + String.format("%.1f", lastResult.error) + "ms",
+                    -textWidth / 2f, extraY, 0xAAFFFFFF);
             extraY += 10;
         }
 
