@@ -1,0 +1,20 @@
+# Gradle build outputs
+.gradle/
+build/
+forge-1.8.9/build/
+fabric-legacy/build/
+
+# Eclipse
+.settings/
+.classpath
+.project
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# macOS
+.DS_Store
