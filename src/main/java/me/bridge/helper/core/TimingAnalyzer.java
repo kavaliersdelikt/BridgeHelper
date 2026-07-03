@@ -43,19 +43,21 @@ public class TimingAnalyzer {
             classification = Classification.TOO_LATE;
         }
 
-        return new TimingResult(deltaTime, idealMs, error, classification);
+        return new TimingResult(deltaTime, idealMs, error, avgSpeed, classification);
     }
 
     public static class TimingResult {
         public final long deltaTime;
         public final double idealMs;
         public final double error;
+        public final double avgSpeed;
         public final Classification classification;
 
-        public TimingResult(long deltaTime, double idealMs, double error, Classification classification) {
+        public TimingResult(long deltaTime, double idealMs, double error, double avgSpeed, Classification classification) {
             this.deltaTime = deltaTime;
             this.idealMs = idealMs;
             this.error = error;
+            this.avgSpeed = avgSpeed;
             this.classification = classification;
         }
     }

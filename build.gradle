@@ -18,8 +18,8 @@ configurations {
     }
 }
 
-version = "1.0.0"
-group = "com.example.bridge"
+version = "1.5.0"
+group = "me.bridge.helper"
 archivesBaseName = "BridgeHelper"
 
 sourceCompatibility = targetCompatibility = '1.8'

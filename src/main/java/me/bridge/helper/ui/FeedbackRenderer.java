@@ -56,10 +56,11 @@ public class FeedbackRenderer extends Gui {
                 text = "PERFECT!";
             } else {
                 double error = lastResult.error;
-                if (error < -15) text = "WAY TOO EARLY";
-                else if (error < 0) text = "SLIGHTLY EARLY";
-                else if (error > 15) text = "WAY TOO LATE";
-                else text = "SLIGHTLY LATE";
+                if (error < -20) text = "WAY TOO EARLY";
+                else if (error < -8) text = "SLIGHTLY EARLY";
+                else if (error > 20) text = "WAY TOO LATE";
+                else if (error > 8) text = "SLIGHTLY LATE";
+                else text = "NEARLY PERFECT";
             }
         } else {
             text = currentClassification.name().replace("_", " ");
@@ -74,7 +75,7 @@ public class FeedbackRenderer extends Gui {
         }
 
         float scaleProgress = Math.min(1.0f, (float) elapsed / 200f);
-        float scale = easeOutBack(scaleProgress) * settings.feedbackScale;
+        float scale = easeOutBack(scaleProgress) * settings.feedbackScale * settings.uiScale;
 
         int x = (int) (res.getScaledWidth() * settings.posX);
         int y = (int) (res.getScaledHeight() * settings.posY);
@@ -112,7 +113,7 @@ public class FeedbackRenderer extends Gui {
             extraY += 10;
         }
         if (settings.showAvgSpeed) {
-            mc.fontRendererObj.drawStringWithShadow("Speed: " + String.format("%.2f", lastResult.error), -textWidth / 2f, extraY, 0xAAFFFFFF);
+            mc.fontRendererObj.drawStringWithShadow("Speed: " + String.format("%.2f", lastResult.avgSpeed), -textWidth / 2f, extraY, 0xAAFFFFFF);
             extraY += 10;
         }
 

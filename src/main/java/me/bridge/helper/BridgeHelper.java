@@ -18,7 +18,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
 
-@Mod(modid = "bridgehelper", name = "BridgeHelper", version = "1.0.0", clientSideOnly = true)
+@Mod(modid = "bridgehelper", name = "BridgeHelper", version = "1.5.0", clientSideOnly = true)
 public class BridgeHelper {
     private final SettingsManager settings = SettingsManager.getInstance();
     private final MovementTracker movementTracker = new MovementTracker();

@@ -68,6 +68,12 @@ public class ClickGUI extends GuiScreen {
                 components.add(new Toggle("Debug", compX, compY + 75, () -> settings.debugMode, (v) -> settings.debugMode = v));
                 components.add(new Toggle("Tick Vis", compX, compY + 100, () -> settings.tickVisualization, (v) -> settings.tickVisualization = v));
                 components.add(new Toggle("Sprint Stability", compX, compY + 125, () -> settings.sprintStabilityRequirement, (v) -> settings.sprintStabilityRequirement = v));
+                components.add(new Button("Reset All Defaults", compX, compY + 150, () -> settings.resetToDefaults()));
+                break;
+            case PRESETS:
+                components.add(new Button("Default", compX, compY, () -> settings.applyPreset(SettingsManager.Preset.DEFAULT)));
+                components.add(new Button("Sensitive", compX, compY + 25, () -> settings.applyPreset(SettingsManager.Preset.SENSITIVE)));
+                components.add(new Button("Casual", compX, compY + 50, () -> settings.applyPreset(SettingsManager.Preset.CASUAL)));
                 break;
         }
     }
@@ -140,7 +146,7 @@ public class ClickGUI extends GuiScreen {
     }
 
     private enum Category {
-        FEEDBACK, TIMING, UI, ADVANCED
+        FEEDBACK, TIMING, UI, ADVANCED, PRESETS
     }
 
     private abstract static class Component {

@@ -14,6 +14,9 @@ public class SettingsManager {
     private static final File CONFIG_FILE = new File(Minecraft.getMinecraft().mcDataDir, "config/BridgeHelper.json");
     private static SettingsManager instance;
 
+    // Config version for migration support. Bump when defaults change.
+    public int configVersion = 2;
+
     public boolean enabled = true;
     public int feedbackDuration = 800;
     public float feedbackScale = 1.0f;
@@ -47,7 +50,68 @@ public class SettingsManager {
     public boolean tickVisualization = false;
     public boolean sprintStabilityRequirement = true;
 
-    private SettingsManager() {}
+    public void resetToDefaults() {
+        this.enabled = true;
+        this.feedbackDuration = 800;
+        this.feedbackScale = 1.0f;
+        this.animationsEnabled = true;
+        this.soundEnabled = false;
+        this.soundVolume = 0.5f;
+        this.userFriendlyMode = true;
+        this.perfectWindow = 15;
+        this.earlyTolerance = 25;
+        this.lateTolerance = 25;
+        this.idealEdgeDistance = 0.80f;
+        this.safeMargin = 0.18f;
+        this.diagonalAdjustment = true;
+        this.movementCompensation = true;
+        this.sprintToleranceAdjustment = true;
+        this.accentColor = 0xFF55FF55;
+        this.textColor = 0xFFFFFFFF;
+        this.roundedCorners = true;
+        this.shadowEnabled = true;
+        this.uiScale = 1.0f;
+        this.sprintIndicator = true;
+        this.posX = 0.5f;
+        this.posY = 0.6f;
+        this.showRawDeltaTime = false;
+        this.showIdealMs = false;
+        this.showAvgSpeed = false;
+        this.debugMode = false;
+        this.tickVisualization = false;
+        this.sprintStabilityRequirement = true;
+        this.configVersion = 2;
+        save();
+    }
+
+    public void applyPreset(Preset preset) {
+        switch (preset) {
+            case DEFAULT:
+                resetToDefaults();
+                break;
+            case SENSITIVE:
+                resetToDefaults();
+                this.perfectWindow = 8;
+                this.earlyTolerance = 15;
+                this.lateTolerance = 15;
+                this.safeMargin = 0.12f;
+                this.soundEnabled = true;
+                break;
+            case CASUAL:
+                resetToDefaults();
+                this.perfectWindow = 25;
+                this.earlyTolerance = 40;
+                this.lateTolerance = 40;
+                this.feedbackDuration = 1200;
+                this.userFriendlyMode = true;
+                break;
+        }
+        save();
+    }
+
+    public enum Preset {
+        DEFAULT, SENSITIVE, CASUAL
+    }
 
     public static SettingsManager getInstance() {
         if (instance == null) {
@@ -102,6 +166,13 @@ public class SettingsManager {
                 this.debugMode = loaded.debugMode;
                 this.tickVisualization = loaded.tickVisualization;
                 this.sprintStabilityRequirement = loaded.sprintStabilityRequirement;
+
+                // Migrate from v1 configs (no configVersion field defaults to 0)
+                if (loaded.configVersion < 2) {
+                    this.uiScale = 1.0f;
+                    this.configVersion = 2;
+                    save();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
